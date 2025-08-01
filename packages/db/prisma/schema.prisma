@@ -6,3 +6,74 @@ datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
+model User{
+  id         String      @unique @default(uuid())
+  email      String      @unique
+  firstname  String 
+  lastname   String
+  password   String
+  details    Details?
+  Jobs       UserJobs[]
+}
+
+model Details{
+  id         Int       @unique @default(autoincrement())
+  resume     String
+  portfolio  String
+  userId     String?   @unique
+  user       User?     @relation(fields: [userId], references: [id])
+  projects   Projects[]
+  tech_stack Tech_stack[]
+}
+model Projects{
+  id            Int     @unique @default(autoincrement())
+  name          String
+  github        String   @unique
+  deployed      String?
+  description   String
+  landingPage   String?
+  detailsId     Int
+  details       Details @relation(fields: [detailsId],references: [id])
+}
+model Tech_stack{
+  id        Int       @unique @default(autoincrement())
+  name      String
+  version   String
+  userId    String?   @unique
+  detailsId Int
+  details   Details @relation(fields: [detailsId],references: [id])
+  jobId     Int
+  Jobs      Jobs    @relation(fields: [jobId],references: [id])
+}
+
+model HR{
+  id        String     @unique @default(uuid())
+  email     String
+  firstname String
+  lastname  String
+  password  String
+  jobs      Jobs[]
+}
+model Jobs{
+  id            Int     @unique @default(autoincrement())
+  role          String
+  description   String
+  location      String
+  salary        Int?
+  experience    String
+  company       String
+  company_logo  String?
+  HRId          String
+  HR            HR     @relation(fields: [HRId],references: [id])
+  skills        Tech_stack[]
+  User          UserJobs[]
+}
+model UserJobs {
+  userId String
+  jobId  Int
+  appliedAt DateTime @default(now()) 
+  user User @relation(fields: [userId], references: [id])
+  job  Jobs  @relation(fields: [jobId], references: [id])
+
+  @@id([userId, jobId])
+}
