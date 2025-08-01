@@ -2,7 +2,9 @@ import expres, {Router} from "express"
 import { userLoginSchema, userSignupSchema } from "./types"
 import { prismaclient } from "@repo/db/client"
 import bcrypt from "bcrypt"
+import jwt from "jsonwebtoken"
 export const userroutes:Router=expres.Router()
+const JWT_SECRET = "defailt" //need to change this to a secure secret in production in db common
 userroutes.post("/signup",async(req,res)=>{
     const parseddata=userSignupSchema.safeParse(req.body)
     if(!parseddata.success){    
@@ -62,7 +64,17 @@ userroutes.post("/signin",async(req,res)=>{
         return
     }
     const passwordcheck = await bcrypt.compare(parseddata.data.password, user.password)
-    
+    if(!passwordcheck){
+        res.json({
+            message:"Invalid password",
+        })
+        return
+    }
+    const token = jwt.sign({ userId: user.id  },JWT_SECRET )
+    res.json({
+        message:"User signed in successfully",
+        token: token,
+    })
 })
 userroutes.post("/details",(req,res)=>{
     res.json({message:"User details added"})
