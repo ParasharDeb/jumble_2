@@ -1,135 +1,134 @@
-# Turborepo starter
+# Jumble
 
-This Turborepo starter is maintained by the Turborepo core team.
+**Jumble** is a modern job matching platform inspired by the swipe interface of dating apps like Bumble, but designed exclusively for job seekers and recruiters. Users swipe right to apply for jobs and swipe left to skip. HRs can review all applicants, then swipe right to shortlist or left to reject candidates.
 
-## Using this example
+## Features
 
-Run the following command:
+- **User Authentication:**  
+  Secure sign-up/sign-in using JWT tokens, hashed passwords with bcrypt.
 
-```sh
-npx create-turbo@latest
-```
+- **Profile Management:**  
+  Users can update their details, add professional info, upload resumes (files stored on Cloudinary).
 
-## What's inside?
+- **Swipe to Apply:**  
+  Browse job postings; swipe right (`apply`) or left (`skip`). Applied jobs are tracked in your profile.
 
-This Turborepo includes the following packages/apps:
+- **HR Dashboard:**  
+  HRs view applicants for each job, then left/right swipe to shortlist or reject.
 
-### Apps and Packages
+- **Tech Stack:**
+  - Backend: Express.js, Node.js, Prisma ORM, PostgreSQL
+  - Frontend: Next.js with TypeScript
+  - Auth: JWT, bcrypt
+  - File Uploads: Multer, Cloudinary
+  - Monorepo management: Turborepo
+  - TypeScript throughout for type safety
 
-- `docs`: a [Next.js](https://nextjs.org/) app
-- `web`: another [Next.js](https://nextjs.org/) app
-- `@repo/ui`: a stub React component library shared by both `web` and `docs` applications
-- `@repo/eslint-config`: `eslint` configurations (includes `eslint-config-next` and `eslint-config-prettier`)
-- `@repo/typescript-config`: `tsconfig.json`s used throughout the monorepo
+## Project Structure
 
-Each package/app is 100% [TypeScript](https://www.typescriptlang.org/).
+/apps
+/backend # Express.js API
+/frontend # Next.js frontend
 
-### Utilities
+/packages
+/db # Shared Prisma models and database logic
 
-This Turborepo has some additional tools already setup for you:
+*Managed with Turborepo for workspaces.*
 
-- [TypeScript](https://www.typescriptlang.org/) for static type checking
-- [ESLint](https://eslint.org/) for code linting
-- [Prettier](https://prettier.io) for code formatting
+## Database Schema (Prisma Example)
 
-### Build
+Highlights (see full schema in `/packages/db/prisma/schema.prisma`):
 
-To build all apps and packages, run the following command:
+- **User**: Signups, personal details, resume (`Details` relation), applied jobs (`UserJobs` join table).
+- **Details**: Resume, portfolio, social links, etc.
+- **Jobs**: Posted by HR, linked to multiple users via `UserJobs`.
+- **HR**: Company-side users, manage job postings and swipe on applicants.
+- **UserJobs**: Many-to-many relation, stores applications and swipe status (can be extended for swipe logic).
 
-```
-cd my-turborepo
+## Key Endpoints
 
-# With [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation) installed (recommended)
-turbo build
+- `POST /signup` & `POST /signin`: User auth
+- `GET /jobs`: Browse available jobs
+- `POST /apply`: Apply (right swipe) for a job
+- `GET /appliedjobs`: View all applied jobs
+- `POST /upload_resume`: Secure resume uploads (Multer + Cloudinary)
+- `GET /applicants/:jobId` (HR): View candidates for a job
+- `POST /hr/swipe`: HR swipes right/left on candidates
 
-# Without [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation), use your package manager
-npx turbo build
-yarn dlx turbo build
-pnpm exec turbo build
-```
+## Setup & Installation
 
-You can build a specific package by using a [filter](https://turborepo.com/docs/crafting-your-repository/running-tasks#using-filters):
+### Prerequisites
+- Node.js ≥ 18.x
+- pnpm (or npm/yarn, pnpm recommended with Turborepo)
+- PostgreSQL database
+- Cloudinary account for file uploads
 
-```
-# With [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation) installed (recommended)
-turbo build --filter=docs
+### 1. Clone & Install
 
-# Without [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation), use your package manager
-npx turbo build --filter=docs
-yarn exec turbo build --filter=docs
-pnpm exec turbo build --filter=docs
-```
 
-### Develop
+git clone https://github.com/your-org/jumble.git
+cd jumble
+pnpm install
 
-To develop all apps and packages, run the following command:
 
-```
-cd my-turborepo
+### 2. Environment Variables
 
-# With [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation) installed (recommended)
-turbo dev
+Create `.env` files in `/apps/backend` and `/packages/db` with the following variables:
 
-# Without [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation), use your package manager
-npx turbo dev
-yarn exec turbo dev
-pnpm exec turbo dev
-```
+DATABASE_URL=postgresql://user:password@host:port/dbname
+JWT_SECRET=your_jwt_secret
+CLOUD_NAME=your_cloudinary_cloud
+CLOUD_API_KEY=your_cloudinary_key
+CLOUD_API_SECRET=your_cloudinary_secret
 
-You can develop a specific package by using a [filter](https://turborepo.com/docs/crafting-your-repository/running-tasks#using-filters):
 
-```
-# With [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation) installed (recommended)
-turbo dev --filter=web
+### 3. Migrate Database
 
-# Without [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation), use your package manager
-npx turbo dev --filter=web
-yarn exec turbo dev --filter=web
-pnpm exec turbo dev --filter=web
-```
+pnpm turbo run db:migrate
 
-### Remote Caching
+OR
+cd packages/db && npx prisma migrate dev
 
-> [!TIP]
-> Vercel Remote Cache is free for all plans. Get started today at [vercel.com](https://vercel.com/signup?/signup?utm_source=remote-cache-sdk&utm_campaign=free_remote_cache).
 
-Turborepo can use a technique known as [Remote Caching](https://turborepo.com/docs/core-concepts/remote-caching) to share cache artifacts across machines, enabling you to share build caches with your team and CI/CD pipelines.
+### 4. Run Apps
 
-By default, Turborepo will cache locally. To enable Remote Caching you will need an account with Vercel. If you don't have an account you can [create one](https://vercel.com/signup?utm_source=turborepo-examples), then enter the following commands:
+- **Backend:**  
+cd apps/backend
+pnpm dev
 
-```
-cd my-turborepo
 
-# With [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation) installed (recommended)
-turbo login
+## How It Works
 
-# Without [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation), use your package manager
-npx turbo login
-yarn exec turbo login
-pnpm exec turbo login
-```
+### For Job Seekers
 
-This will authenticate the Turborepo CLI with your [Vercel account](https://vercel.com/docs/concepts/personal-accounts/overview).
+1. Sign up & log in.
+2. Complete your profile & upload your resume.
+3. Browse jobs, swipe right to apply, left to skip.
+4. Track all applications.
 
-Next, you can link your Turborepo to your Remote Cache by running the following command from the root of your Turborepo:
+### For HRs
 
-```
-# With [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation) installed (recommended)
-turbo link
+1. Sign up as HR.
+2. Post new jobs.
+3. View all applicants for each job.
+4. Swipe right (shortlist) or left (reject) on each candidate.
 
-# Without [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation), use your package manager
-npx turbo link
-yarn exec turbo link
-pnpm exec turbo link
-```
+## Security
 
-## Useful Links
+- All sensitive credentials stored in environment variables.
+- Passwords hashed with bcrypt.
+- JWT tokens for session/authentication.
+- Multer restricts file uploads to resume files (configurable).
 
-Learn more about the power of Turborepo:
+## Contributing
 
-- [Tasks](https://turborepo.com/docs/crafting-your-repository/running-tasks)
-- [Caching](https://turborepo.com/docs/crafting-your-repository/caching)
-- [Remote Caching](https://turborepo.com/docs/core-concepts/remote-caching)
-- [Filtering](https://turborepo.com/docs/crafting-your-repository/running-tasks#using-filters)
-- [Configuration Options](https://turborepo.com/docs/reference/configuration)
-- [CLI Usage](https://turborepo.com/docs/reference/command-line-reference)
+- Fork the repo, create a branch, and submit pull requests.
+- Prisma schema located in `/packages/db/prisma`.
+- Shared types and interfaces are managed across packages.
+- Tests to be added based on your preferred framework.
+
+## TODO
+
+- Implement email verification and password reset.
+- Add automated tests and CI/CD.
+- Add candidate/job analytics dashboards.
