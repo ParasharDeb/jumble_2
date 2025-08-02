@@ -165,6 +165,7 @@ userroutes.put("/change_password",authmiddleware,async(req,res)=>{
     })
 })
 userroutes.post("/upload_resume",(req,res)=>{
+    
     res.json({message:`for uploading resume`})
 })
 userroutes.get("/jobs",(req,res)=>{
