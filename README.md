@@ -66,7 +66,7 @@ Highlights (see full schema in `/packages/db/prisma/schema.prisma`):
 ### 1. Clone & Install
 
 
-git clone https://github.com/your-org/jumble.git
+git clone https://github.com/ParasharDeb/jumble_2
 cd jumble
 pnpm install
 
