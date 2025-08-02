@@ -6,7 +6,8 @@ import jwt from "jsonwebtoken"
 import { authmiddleware } from "./middleware"
 import { JWT_SECRET } from "./config"
 import { AuthenticatedRequest } from "./interfaces"
-
+import fs from "fs"
+import { uploadCouldinary } from "./cloudinary"
 
 
 export const userroutes:Router=expres.Router()
@@ -164,10 +165,58 @@ userroutes.put("/change_password",authmiddleware,async(req,res)=>{
         message:"Password changed successfully",
     })
 })
-userroutes.post("/upload_resume",(req,res)=>{
+userroutes.post("/upload_resume",authmiddleware,async(req,res)=>{
+    const userId = (req as unknown as AuthenticatedRequest).userId;
+
+  if (!userId) return res.status(401).json({ message: "Unauthorized" });
+  if (!req.file) return res.status(400).json({ message: "No file uploaded" });
+
+  console.log("File received:", {
+    originalname: req.file.originalname,
+    path: req.file.path,
+    size: req.file.size,
+    mimetype: req.file.mimetype
+  });
+
+  try {
+    // Upload file to Cloudinary
+    const cloudinaryResponse = await uploadCouldinary(req.file.path);
     
-    res.json({message:`for uploading resume`})
-})
+    if (!cloudinaryResponse) {
+      console.error("Cloudinary upload failed - no response returned");
+      return res.status(500).json({ message: "Failed to upload file to Cloudinary" });
+    }
+
+    // Update user's resume URL in database
+    await prismaclient.details.update({
+      where: { userId: userId },
+      data: { resume: cloudinaryResponse.secure_url }
+    });
+
+    // Clean up local file
+    fs.unlinkSync(req.file.path);
+
+    res.json({
+      message: "Resume uploaded successfully",
+      resumeUrl: cloudinaryResponse.secure_url
+    });
+
+  } catch (error) {
+    // Clean up local file if it exists
+    if (req.file && fs.existsSync(req.file.path)) {
+      fs.unlinkSync(req.file.path);
+    }
+    
+    console.error('Upload error:', error);
+    res.status(500).json({ 
+      message: "Failed to upload resume",
+      error: error instanceof Error ? error.message : "Unknown error"
+    });
+  }
+});
+
+
+
 userroutes.get("/jobs",(req,res)=>{
     res.json({message:"User jobs"})
 })
