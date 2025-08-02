@@ -18,4 +18,8 @@ export const detailsSchema = z.object({
     linkedin: z.url("Invalid URL format for LinkedIn profile"),
     github: z.url("Invalid URL format for GitHub profile"),
     portfolio: z.url("Invalid URL format for portfolio"),
+    bio: z.string().min(1, "Bio is required"),
+    location: z.string().min(1, "Location is required"),
+    phone: z.string().min(10, "Phone number must be at least 10 characters long"),
+    
 })

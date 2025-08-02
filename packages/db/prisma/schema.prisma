@@ -19,6 +19,9 @@ model User{
 model Details{
   id         Int       @unique @default(autoincrement())
   resume     String
+  bio        String
+  location   String
+  phone      String?
   portfolio  String
   github     String
   linkedin   String

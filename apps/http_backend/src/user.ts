@@ -105,6 +105,9 @@ userroutes.post("/details",authmiddleware,async(req,res)=>{
             linkedin: parseddata.data.linkedin,
             github: parseddata.data.github,
             portfolio: parseddata.data.portfolio,//TODO MAKE PORTFOLIO OPTIONALw
+            bio: parseddata.data.bio,
+            location: parseddata.data.location,
+            phone: parseddata.data.phone,
             userId: userId, 
         },
     })
