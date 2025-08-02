@@ -4,8 +4,13 @@ import { prismaclient } from "@repo/db/client"
 import bcrypt from "bcrypt"
 import jwt from "jsonwebtoken"
 import { authmiddleware } from "./middleware"
-export const userroutes:Router=expres.Router()
 import { JWT_SECRET } from "./config"
+import { AuthenticatedRequest } from "./interfaces"
+
+
+
+export const userroutes:Router=expres.Router()
+
 userroutes.post("/signup",async(req,res)=>{
     const parseddata=userSignupSchema.safeParse(req.body)
     if(!parseddata.success){    
@@ -78,7 +83,7 @@ userroutes.post("/signin",async(req,res)=>{
     })
 })
 userroutes.post("/details",authmiddleware,async(req,res)=>{
-    const userId = req.userId;
+    const userId = (req as unknown as AuthenticatedRequest).userId;
     const parseddata=detailsSchema.safeParse(req.body)
     if(!parseddata.success){    
         res.json({
@@ -97,7 +102,22 @@ userroutes.post("/details",authmiddleware,async(req,res)=>{
     })
 })    
 userroutes.get("/profile",(req,res)=>{
-    res.json({message:"User profile"})
+    const userId = (req as unknown as AuthenticatedRequest).userId;
+    if(!userId){
+        res.json({
+            message:"User not authenticated",
+        })
+        return
+    }
+    const user = prismaclient.user.findUnique({
+        where: {
+            id: userId,
+        },
+        include: {
+            details: true,
+        },
+    })
+    res.json({user})
 })
 userroutes.put("/profile",(req,res)=>{
     res.json({message:"User profile updated"})
