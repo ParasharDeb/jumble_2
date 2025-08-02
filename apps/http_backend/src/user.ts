@@ -3,8 +3,9 @@ import { detailsSchema, userLoginSchema, userSignupSchema } from "./types"
 import { prismaclient } from "@repo/db/client"
 import bcrypt from "bcrypt"
 import jwt from "jsonwebtoken"
+import { authmiddleware } from "./middleware"
 export const userroutes:Router=expres.Router()
-const JWT_SECRET = "defailt" //need to change this to a secure secret in production in db common
+import { JWT_SECRET } from "./config"
 userroutes.post("/signup",async(req,res)=>{
     const parseddata=userSignupSchema.safeParse(req.body)
     if(!parseddata.success){    
@@ -76,7 +77,7 @@ userroutes.post("/signin",async(req,res)=>{
         token: token,
     })
 })
-userroutes.post("/details",async(req,res)=>{
+userroutes.post("/details",authmiddleware,async(req,res)=>{
     const userId = req.userId;
     const parseddata=detailsSchema.safeParse(req.body)
     if(!parseddata.success){    
