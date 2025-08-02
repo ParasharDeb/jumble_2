@@ -112,7 +112,7 @@ userroutes.post("/details",authmiddleware,async(req,res)=>{
         message:"User details created successfully",
     })
 })    
-//need another endpoint to update user details
+//TODO:  need another endpoint to update user details
 userroutes.get("/profile",authmiddleware,async(req,res)=>{
     const userId = (req as unknown as AuthenticatedRequest).userId;
     console.log("User ID from request:", userId);
@@ -228,8 +228,18 @@ userroutes.post("/upload_resume",authmiddleware,upload.single("resume"),async(re
   }
 });
 
-userroutes.get("/jobs",(req,res)=>{
-    res.json({message:"User jobs"})
+userroutes.get("/jobs",authmiddleware,async(req,res)=>{
+    const userId = (req as unknown as AuthenticatedRequest).userId;
+    if(!userId){
+        res.json({
+            message:"User not authenticated",
+        })
+        return
+    }   
+    const jobs= await prismaclient.jobs.findMany({
+
+    })
+    res.json({jobs})
 })
 userroutes.post("/apply",(req,res)=>{
     res.json({message:"User applied for job"})
