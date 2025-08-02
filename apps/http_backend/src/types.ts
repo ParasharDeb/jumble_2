@@ -9,3 +9,13 @@ export const userSignupSchema = userLoginSchema.extend({
     email: z.email("Invalid email format"),
     password: z.string().min(6, "Password must be at least 6 characters long"), 
 });
+export const userUpdateSchema = z.object({
+    newPassword: z.string().min(6, "New password must be at least 6 characters long").optional(),
+    oldpassword: z.string().min(6, "Old password must be at least 6 characters long").optional(),
+})
+export const detailsSchema = z.object({
+    resume: z.url("Invalid URL format for resume"),
+    linkedin: z.url("Invalid URL format for LinkedIn profile"),
+    github: z.url("Invalid URL format for GitHub profile"),
+    portfolio: z.url("Invalid URL format for portfolio"),
+})

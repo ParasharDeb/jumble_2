@@ -20,6 +20,8 @@ model Details{
   id         Int       @unique @default(autoincrement())
   resume     String
   portfolio  String
+  github     String
+  linkedin   String
   userId     String?   @unique
   user       User?     @relation(fields: [userId], references: [id])
   projects   Projects[]

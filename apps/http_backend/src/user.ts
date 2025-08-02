@@ -77,8 +77,7 @@ userroutes.post("/signin",async(req,res)=>{
     })
 })
 userroutes.post("/details",(req,res)=>{
-    res.json({message:"User details added"})
-
+    
 })    
 userroutes.get("/profile",(req,res)=>{
     res.json({message:"User profile"})
