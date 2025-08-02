@@ -1,5 +1,5 @@
 import expres, {Router} from "express"
-import { userLoginSchema, userSignupSchema } from "./types"
+import { detailsSchema, userLoginSchema, userSignupSchema } from "./types"
 import { prismaclient } from "@repo/db/client"
 import bcrypt from "bcrypt"
 import jwt from "jsonwebtoken"
@@ -13,7 +13,7 @@ userroutes.post("/signup",async(req,res)=>{
         })
         return
     }
-    const user = await prismaclient.user.findfirst({
+    const user = await prismaclient.user.findFirst({
         where: {
             email: parseddata.data.email,
         },
@@ -52,7 +52,7 @@ userroutes.post("/signin",async(req,res)=>{
         })
         return
     }   
-    const user = prismaclient.user.findfirst({
+    const user = await prismaclient.user.findFirst({
         where: {
             email: parseddata.data.email
         },
@@ -63,7 +63,7 @@ userroutes.post("/signin",async(req,res)=>{
         })
         return
     }
-    const passwordcheck = await bcrypt.compare(parseddata.data.password, user.password)
+    const passwordcheck = await bcrypt.compare(parseddata.data.password, user.password);
     if(!passwordcheck){
         res.json({
             message:"Invalid password",
@@ -76,8 +76,24 @@ userroutes.post("/signin",async(req,res)=>{
         token: token,
     })
 })
-userroutes.post("/details",(req,res)=>{
-    
+userroutes.post("/details",async(req,res)=>{
+    const userId = req.userId;
+    const parseddata=detailsSchema.safeParse(req.body)
+    if(!parseddata.success){    
+        res.json({
+            message:"Invalid data",
+        })
+        return
+    }
+    await prismaclient.details.create({
+        data: {
+            resume: parseddata.data.resume,
+            linkedin: parseddata.data.linkedin,
+            github: parseddata.data.github,
+            portfolio: parseddata.data.portfolio,
+            userId: req.body.userId, 
+        },
+    })
 })    
 userroutes.get("/profile",(req,res)=>{
     res.json({message:"User profile"})
