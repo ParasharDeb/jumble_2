@@ -3,7 +3,7 @@ import { detailsSchema, userLoginSchema, userSignupSchema, userUpdateSchema } fr
 import { prismaclient } from "@repo/db/client"
 import bcrypt from "bcrypt"
 import jwt from "jsonwebtoken"
-import { authmiddleware } from "./middleware"
+import { authmiddleware, upload } from "./middleware"
 import { JWT_SECRET } from "./config"
 import { AuthenticatedRequest } from "./interfaces"
 import fs from "fs"
@@ -86,6 +86,13 @@ userroutes.post("/signin",async(req,res)=>{
 userroutes.post("/details",authmiddleware,async(req,res)=>{
     const userId = (req as unknown as AuthenticatedRequest).userId;
     const parseddata=detailsSchema.safeParse(req.body)
+    if(!userId){
+        res.json({
+            message:"User not authenticated",
+        })
+        return
+    }
+    console.log(parseddata.data,parseddata.error)
     if(!parseddata.success){    
         res.json({
             message:"Invalid data",
@@ -94,16 +101,21 @@ userroutes.post("/details",authmiddleware,async(req,res)=>{
     }
     await prismaclient.details.create({
         data: {
-            resume: parseddata.data.resume,
+            resume: parseddata.data.resume|| " ",
             linkedin: parseddata.data.linkedin,
             github: parseddata.data.github,
-            portfolio: parseddata.data.portfolio,
-            userId: req.body.userId, 
+            portfolio: parseddata.data.portfolio,//TODO MAKE PORTFOLIO OPTIONALw
+            userId: userId, 
         },
     })
+    res.json({
+        message:"User details created successfully",
+    })
 })    
-userroutes.get("/profile",async(req,res)=>{
+//need another endpoint to update user details
+userroutes.get("/profile",authmiddleware,async(req,res)=>{
     const userId = (req as unknown as AuthenticatedRequest).userId;
+    console.log("User ID from request:", userId);
     if(!userId){
         res.json({
             message:"User not authenticated",
@@ -164,8 +176,9 @@ userroutes.put("/change_password",authmiddleware,async(req,res)=>{
     res.json({
         message:"Password changed successfully",
     })
+    //TODO:didnt check this endpoint
 })
-userroutes.post("/upload_resume",authmiddleware,async(req,res)=>{
+userroutes.post("/upload_resume",authmiddleware,upload.single("resume"),async(req,res)=>{
     const userId = (req as unknown as AuthenticatedRequest).userId;
 
   if (!userId) return res.status(401).json({ message: "Unauthorized" });
@@ -214,8 +227,6 @@ userroutes.post("/upload_resume",authmiddleware,async(req,res)=>{
     });
   }
 });
-
-
 
 userroutes.get("/jobs",(req,res)=>{
     res.json({message:"User jobs"})

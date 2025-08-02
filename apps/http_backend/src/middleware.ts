@@ -7,10 +7,12 @@ interface AuthenticatedRequest extends Request {
 }
 export function authmiddleware(req:AuthenticatedRequest,res:Response,next:NextFunction){
     const token=req.headers["authorization"]??" ";
+    console.log("Token received:", token);
     const decoded=jwt.verify(token,JWT_SECRET) as {userId : string}
     if (decoded){
 
         req.userId=decoded.userId
+            console.log(req.userId)
         next()
     }
     else{
@@ -18,7 +20,7 @@ export function authmiddleware(req:AuthenticatedRequest,res:Response,next:NextFu
             message:"user unauthorized"
         })
     }
-    console.log(req.userId)
+
 }
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {

@@ -14,7 +14,7 @@ export const userUpdateSchema = z.object({
     oldpassword: z.string().min(6, "Old password must be at least 6 characters long"),
 })
 export const detailsSchema = z.object({
-    resume: z.url("Invalid URL format for resume"),
+    resume: z.url("Invalid URL format for resume").optional(),
     linkedin: z.url("Invalid URL format for LinkedIn profile"),
     github: z.url("Invalid URL format for GitHub profile"),
     portfolio: z.url("Invalid URL format for portfolio"),
