@@ -1,5 +1,5 @@
 import expres, {Router} from "express"
-import { detailsSchema, userLoginSchema, userSignupSchema } from "./types"
+import { detailsSchema, userLoginSchema, userSignupSchema, userUpdateSchema } from "./types"
 import { prismaclient } from "@repo/db/client"
 import bcrypt from "bcrypt"
 import jwt from "jsonwebtoken"
@@ -101,7 +101,7 @@ userroutes.post("/details",authmiddleware,async(req,res)=>{
         },
     })
 })    
-userroutes.get("/profile",(req,res)=>{
+userroutes.get("/profile",async(req,res)=>{
     const userId = (req as unknown as AuthenticatedRequest).userId;
     if(!userId){
         res.json({
@@ -109,7 +109,7 @@ userroutes.get("/profile",(req,res)=>{
         })
         return
     }
-    const user = prismaclient.user.findUnique({
+    const user =await prismaclient.user.findUnique({
         where: {
             id: userId,
         },
@@ -119,8 +119,50 @@ userroutes.get("/profile",(req,res)=>{
     })
     res.json({user})
 })
-userroutes.put("/profile",(req,res)=>{
-    res.json({message:"User profile updated"})
+userroutes.put("/change_password",authmiddleware,async(req,res)=>{
+    const userId = (req as unknown as AuthenticatedRequest).userId;
+    const parseddata=userUpdateSchema.safeParse(req.body)
+    if(!parseddata.success){
+        res.json({
+            message:"Invalid data",
+        })
+        return
+    }
+    if(!userId){
+        res.json({
+            message:"User not authenticated",
+        })
+        return
+    }
+    const user = await prismaclient.user.findUnique({
+        where: {
+            id: userId,
+        },
+    })
+    if(!user){
+        res.json({
+            message:"User does not exist",
+        })
+        return
+    }
+    const passwordcheck = await bcrypt.compare(parseddata.data.oldpassword, user.password);
+    if(!passwordcheck){
+        res.json({
+            message:"Invalid old password",
+        })
+    return}
+    const hashedPassword = await bcrypt.hash(parseddata.data.newPassword, 10);
+    await prismaclient.user.update({
+        where: {
+            id: userId,
+        },
+        data: {
+            password: hashedPassword,
+        },
+    })
+    res.json({
+        message:"Password changed successfully",
+    })
 })
 userroutes.post("/upload_resume",(req,res)=>{
     res.json({message:`for uploading resume`})
