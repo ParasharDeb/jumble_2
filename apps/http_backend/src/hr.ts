@@ -1,9 +1,12 @@
 import express, {Router } from "express"
-import { userSignupSchema } from "./types"
+import { userSignupSchema,userLoginSchema,userUpdateSchema} from "./types"
 import bcrypt from "bcrypt"
 import { prismaclient } from "@repo/db/client"
 import jwt from "jsonwebtoken"
 import { JWT_SECRET } from "./config"
+
+import { authmiddleware } from "./middleware"
+import { AuthenticatedRequest } from "./interfaces"
 export const hrroutes:Router=express.Router()
 hrroutes.post("/signup",async(req,res)=>{
     const parseddata = userSignupSchema.safeParse(req.body)
@@ -43,7 +46,7 @@ hrroutes.post("/signup",async(req,res)=>{
     res.json({message:"HR signed up"})
 })
 hrroutes.post("/signin",async (req,res)=>{
-    const parseddata = userSignupSchema.safeParse(req.body)
+    const parseddata = userLoginSchema.safeParse(req.body)
     if(!parseddata.success){
         res.json({
             message:"Invalid data",
@@ -74,8 +77,49 @@ hrroutes.post("/signin",async (req,res)=>{
         token: token,
     })
 })
-hrroutes.put("/profile",(req,res)=>{
-    res.json({message:"HR profile updated"})
+hrroutes.put("/change_password",authmiddleware,async(req,res)=>{
+    const parseddata = userUpdateSchema.safeParse(req.body)
+    if(!parseddata.success){    
+        res.json({
+            message:"Invalid data",
+        })
+        return
+    }
+    const userId = (req as unknown as AuthenticatedRequest).userId;
+    if(!userId){
+        res.json({
+            message:"User not authenticated",
+        })
+        return
+    }
+    const user = await prismaclient.hR.findUnique({
+        where: {
+            id: userId,
+        },
+    })
+    if(!user){
+        res.json({
+            message:"User not found",
+        })
+        return
+    }
+    const passwordcheck=await bcrypt.compare(parseddata.data.oldpassword, user.password);
+    if(!passwordcheck){
+        res.json({
+            message:"Old password is incorrect",
+        })
+        return
+    }
+    const hashedPassword = await bcrypt.hash(parseddata.data.newPassword, 10);
+    await prismaclient.hR.update({
+        where: {
+            id: userId,
+        },
+        data: {
+            password: hashedPassword,
+        },
+    })
+    res.json({message:"password updated"})
 })
 hrroutes.get("/profile",(req,res)=>{
     res.json({message:"HR profile"})
