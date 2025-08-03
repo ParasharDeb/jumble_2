@@ -1,5 +1,5 @@
 import express, {Router } from "express"
-import { userSignupSchema,userLoginSchema,userUpdateSchema} from "./types"
+import { userSignupSchema,userLoginSchema,userUpdateSchema, jobSchema} from "./types"
 import bcrypt from "bcrypt"
 import { prismaclient } from "@repo/db/client"
 import jwt from "jsonwebtoken"
@@ -140,8 +140,42 @@ hrroutes.get("/profile",authmiddleware,async(req,res)=>{
     res.json({user})
 
 })
-hrroutes.post("/create_job",authmiddleware,(req,res)=>{
+hrroutes.post("/create_job",authmiddleware,async(req,res)=>{
+    const parseddata= jobSchema.safeParse(req.body);
+    if(!parseddata.success){
+        res.json({
+            message:"invalid input"
+        })
+        return
+    }
+    const userId=(req as unknown as AuthenticatedRequest).userId
+    if(!userId){
+        res.json({
+            message:"you are not signed in"
+        })
+        return
+    }
+    try {
+        await prismaclient.jobs.create({
+        data:{
+            role:parseddata.data.role,
+            description:parseddata.data.description,
+            location:parseddata.data.location,
+            salary:parseddata.data.salary,
+            experience:parseddata.data.experience,
+            company:parseddata.data.company,
+            HRId:userId
+        }
     
+    })
+    res.json({
+        message:"successfully created a job"
+    })
+    } catch (error) {
+        res.json({
+            message:error
+        })
+    }
     res.json({message:"Job created"})
 })
 hrroutes.get("/jobs",(req,res)=>{
