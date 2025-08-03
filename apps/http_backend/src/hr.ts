@@ -2,6 +2,8 @@ import express, {Router } from "express"
 import { userSignupSchema } from "./types"
 import bcrypt from "bcrypt"
 import { prismaclient } from "@repo/db/client"
+import jwt from "jsonwebtoken"
+import { JWT_SECRET } from "./config"
 export const hrroutes:Router=express.Router()
 hrroutes.post("/signup",async(req,res)=>{
     const parseddata = userSignupSchema.safeParse(req.body)
@@ -11,7 +13,7 @@ hrroutes.post("/signup",async(req,res)=>{
         })
         return
     }
-    const hr = await prismaclient.hr.findFirst({
+    const hr = await prismaclient.hR.findFirst({
         where: {
             email: parseddata.data.email,
         },
@@ -40,8 +42,37 @@ hrroutes.post("/signup",async(req,res)=>{
     }
     res.json({message:"HR signed up"})
 })
-hrroutes.post("/signin",(req,res)=>{
-    res.json({message:"HR signed in"})
+hrroutes.post("/signin",async (req,res)=>{
+    const parseddata = userSignupSchema.safeParse(req.body)
+    if(!parseddata.success){
+        res.json({
+            message:"Invalid data",
+        })
+        return
+    }
+    const hr = await prismaclient.hR.findFirst({
+        where: {
+            email: parseddata.data.email,
+        },
+    })
+    if(!hr){
+        res.json({
+            message:"wrong email",
+        })
+        return
+    }
+    const isPasswordValid = await bcrypt.compare(parseddata.data.password, hr.password);
+    if(!isPasswordValid){
+        res.json({
+            message:"wrong password",
+        })
+        return
+    }
+    const token = jwt.sign({id: hr.id}, JWT_SECRET);
+    res.json({
+        message:"HR signed in successfully",
+        token: token,
+    })
 })
 hrroutes.put("/profile",(req,res)=>{
     res.json({message:"HR profile updated"})
