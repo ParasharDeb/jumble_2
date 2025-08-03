@@ -1,6 +1,43 @@
 import express, {Router } from "express"
+import { userSignupSchema } from "./types"
+import bcrypt from "bcrypt"
+import { prismaclient } from "@repo/db/client"
 export const hrroutes:Router=express.Router()
-hrroutes.post("/signup",(req,res)=>{
+hrroutes.post("/signup",async(req,res)=>{
+    const parseddata = userSignupSchema.safeParse(req.body)
+    if(!parseddata.success){
+        res.json({
+            message:"Invalid data",
+        })
+        return
+    }
+    const hr = await prismaclient.hr.findFirst({
+        where: {
+            email: parseddata.data.email,
+        },
+    })
+    if(hr){
+        res.json({
+            message:"email already exists",
+        })
+        return
+    }
+    const hashedPassword =await bcrypt.hash(parseddata.data.password, 10);
+    try {
+        await prismaclient.hR.create({
+            data: {
+                firstname: parseddata.data.firstname,
+                lastname: parseddata.data.lastname,
+                email: parseddata.data.email,
+                password: hashedPassword,
+            },
+        })
+    } catch (error) {
+        res.json({
+            message:"Error creating HR",
+        })
+        return
+    }
     res.json({message:"HR signed up"})
 })
 hrroutes.post("/signin",(req,res)=>{
