@@ -75,7 +75,6 @@ model Jobs {
   salary       Int?
   experience   String
   company      String
-  company_logo String?
   HRId         String
   HR           HR            @relation(fields: [HRId], references: [id])
   skills       Tech_stack[]

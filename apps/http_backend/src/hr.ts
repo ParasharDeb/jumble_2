@@ -140,7 +140,8 @@ hrroutes.get("/profile",authmiddleware,async(req,res)=>{
     res.json({user})
 
 })
-hrroutes.post("/create_job",(req,res)=>{
+hrroutes.post("/create_job",authmiddleware,(req,res)=>{
+    
     res.json({message:"Job created"})
 })
 hrroutes.get("/jobs",(req,res)=>{
@@ -149,6 +150,7 @@ hrroutes.get("/jobs",(req,res)=>{
 hrroutes.get("/jobs/:id",(req,res)=>{
     res.json({message:`Job details for job with id ${req.params.id}`})
 })
+//need to figure out these endpoints
 hrroutes.get("/applied_users/:jobId",(req,res)=>{
     res.json({message:`Users applied for job with id ${req.params.jobId}`})
 })
