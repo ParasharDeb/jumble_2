@@ -104,7 +104,7 @@ userroutes.post("/details",authmiddleware,async(req,res)=>{
             resume: parseddata.data.resume|| " ",
             linkedin: parseddata.data.linkedin,
             github: parseddata.data.github,
-            portfolio: parseddata.data.portfolio,//TODO MAKE PORTFOLIO OPTIONALw
+            portfolio: parseddata.data.portfolio,
             bio: parseddata.data.bio,
             location: parseddata.data.location,
             phone: parseddata.data.phone,
@@ -202,12 +202,6 @@ userroutes.post("/upload_resume",authmiddleware,upload.single("resume"),async(re
       console.error("Cloudinary upload failed - no response returned");
       return res.status(500).json({ message: "Failed to upload file to Cloudinary" });
     }
-
-    // Update user's resume URL in database
-    await prismaclient.details.update({
-      where: { userId: userId },
-      data: { resume: cloudinaryResponse.secure_url }
-    });
     console.log("Resume uploaded to Cloudinary:", cloudinaryResponse.secure_url);
     // Clean up local file
     fs.unlinkSync(req.file.path);

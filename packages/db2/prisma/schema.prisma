@@ -13,7 +13,7 @@ model User {
   firstname String
   lastname  String
   password  String
-  details   Details?   @relation("UserToDetails")
+  details   Details?  
   Jobs      UserJobs[]
 }
 
@@ -27,8 +27,8 @@ model Details {
   portfolio  String
   github     String
   linkedin   String
-  userId     String?    @unique
-  user       User?      @relation("UserToDetails", fields: [userId], references: [id])
+  userId     String     @unique
+  user       User       @relation( fields: [userId], references: [id])
   projects   Projects[]
   tech_stack Tech_stack[]
 }
