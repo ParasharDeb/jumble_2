@@ -178,8 +178,25 @@ hrroutes.post("/create_job",authmiddleware,async(req,res)=>{
     }
     res.json({message:"Job created"})
 })
-hrroutes.get("/jobs",(req,res)=>{
-    res.json({message:"HR jobs"})
+hrroutes.get("/jobs",authmiddleware,async(req,res)=>{
+    const userId=(req as unknown as AuthenticatedRequest).userId
+    if(!userId){
+        res.json({
+            message:"you are not signed in"
+        })
+    }
+    const jobs = await prismaclient.jobs.findFirst({
+        where:{
+            id:userId
+        }
+    })
+    if(!jobs){
+        res.json({
+            message:"cannot find the user"
+        })
+        return
+    }
+    res.json(jobs)
 })
 hrroutes.get("/jobs/:id",(req,res)=>{
     res.json({message:`Job details for job with id ${req.params.id}`})
