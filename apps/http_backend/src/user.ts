@@ -179,7 +179,7 @@ userroutes.put("/change_password",authmiddleware,async(req,res)=>{
     res.json({
         message:"Password changed successfully",
     })
-    //TODO:didnt check this endpoint
+
 })
 userroutes.post("/upload_resume",authmiddleware,upload.single("resume"),async(req,res)=>{
     const userId = (req as unknown as AuthenticatedRequest).userId;
@@ -208,7 +208,7 @@ userroutes.post("/upload_resume",authmiddleware,upload.single("resume"),async(re
       where: { userId: userId },
       data: { resume: cloudinaryResponse.secure_url }
     });
-
+    console.log("Resume uploaded to Cloudinary:", cloudinaryResponse.secure_url);
     // Clean up local file
     fs.unlinkSync(req.file.path);
 

@@ -4,15 +4,24 @@ CREATE TABLE "public"."User" (
     "email" TEXT NOT NULL,
     "firstname" TEXT NOT NULL,
     "lastname" TEXT NOT NULL,
-    "password" TEXT NOT NULL
+    "password" TEXT NOT NULL,
+
+    CONSTRAINT "User_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
 CREATE TABLE "public"."Details" (
     "id" SERIAL NOT NULL,
     "resume" TEXT NOT NULL,
+    "bio" TEXT,
+    "location" TEXT,
+    "phone" TEXT,
     "portfolio" TEXT NOT NULL,
-    "userId" TEXT
+    "github" TEXT NOT NULL,
+    "linkedin" TEXT NOT NULL,
+    "userId" TEXT,
+
+    CONSTRAINT "Details_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -23,7 +32,9 @@ CREATE TABLE "public"."Projects" (
     "deployed" TEXT,
     "description" TEXT NOT NULL,
     "landingPage" TEXT,
-    "detailsId" INTEGER NOT NULL
+    "detailsId" INTEGER NOT NULL,
+
+    CONSTRAINT "Projects_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -31,9 +42,10 @@ CREATE TABLE "public"."Tech_stack" (
     "id" SERIAL NOT NULL,
     "name" TEXT NOT NULL,
     "version" TEXT NOT NULL,
-    "userId" TEXT,
     "detailsId" INTEGER NOT NULL,
-    "jobId" INTEGER NOT NULL
+    "jobId" INTEGER NOT NULL,
+
+    CONSTRAINT "Tech_stack_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -42,7 +54,9 @@ CREATE TABLE "public"."HR" (
     "email" TEXT NOT NULL,
     "firstname" TEXT NOT NULL,
     "lastname" TEXT NOT NULL,
-    "password" TEXT NOT NULL
+    "password" TEXT NOT NULL,
+
+    CONSTRAINT "HR_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -55,7 +69,9 @@ CREATE TABLE "public"."Jobs" (
     "experience" TEXT NOT NULL,
     "company" TEXT NOT NULL,
     "company_logo" TEXT,
-    "HRId" TEXT NOT NULL
+    "HRId" TEXT NOT NULL,
+
+    CONSTRAINT "Jobs_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -68,34 +84,16 @@ CREATE TABLE "public"."UserJobs" (
 );
 
 -- CreateIndex
-CREATE UNIQUE INDEX "User_id_key" ON "public"."User"("id");
-
--- CreateIndex
 CREATE UNIQUE INDEX "User_email_key" ON "public"."User"("email");
-
--- CreateIndex
-CREATE UNIQUE INDEX "Details_id_key" ON "public"."Details"("id");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "Details_userId_key" ON "public"."Details"("userId");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "Projects_id_key" ON "public"."Projects"("id");
-
--- CreateIndex
 CREATE UNIQUE INDEX "Projects_github_key" ON "public"."Projects"("github");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "Tech_stack_id_key" ON "public"."Tech_stack"("id");
-
--- CreateIndex
-CREATE UNIQUE INDEX "Tech_stack_userId_key" ON "public"."Tech_stack"("userId");
-
--- CreateIndex
-CREATE UNIQUE INDEX "HR_id_key" ON "public"."HR"("id");
-
--- CreateIndex
-CREATE UNIQUE INDEX "Jobs_id_key" ON "public"."Jobs"("id");
+CREATE UNIQUE INDEX "HR_email_key" ON "public"."HR"("email");
 
 -- AddForeignKey
 ALTER TABLE "public"."Details" ADD CONSTRAINT "Details_userId_fkey" FOREIGN KEY ("userId") REFERENCES "public"."User"("id") ON DELETE SET NULL ON UPDATE CASCADE;

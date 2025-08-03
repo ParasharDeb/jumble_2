@@ -22,7 +22,7 @@ importers:
     dependencies:
       '@repo/db':
         specifier: workspace:*
-        version: link:../../packages/db
+        version: link:../../packages/db2
       '@repo/typescript-config':
         specifier: workspace:*
         version: link:../../packages/typescript-config
@@ -106,7 +106,7 @@ importers:
         specifier: 5.8.2
         version: 5.8.2
 
-  packages/db:
+  packages/db2:
     dependencies:
       '@prisma/client':
         specifier: 6.13.0
