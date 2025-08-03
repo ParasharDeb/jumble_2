@@ -181,6 +181,9 @@ userroutes.put("/change_password",authmiddleware,async(req,res)=>{
     })
 
 })
+//A Big TODO: need to add file type validation and size validation
+//Also need to check how to return the file url after uploading to cloudinary
+//
 userroutes.post("/upload_resume",authmiddleware,upload.single("resume"),async(req,res)=>{
     const userId = (req as unknown as AuthenticatedRequest).userId;
 
@@ -195,7 +198,6 @@ userroutes.post("/upload_resume",authmiddleware,upload.single("resume"),async(re
   });
 
   try {
-    // Upload file to Cloudinary
     const cloudinaryResponse = await uploadCouldinary(req.file.path);
     
     if (!cloudinaryResponse) {
@@ -203,7 +205,6 @@ userroutes.post("/upload_resume",authmiddleware,upload.single("resume"),async(re
       return res.status(500).json({ message: "Failed to upload file to Cloudinary" });
     }
     console.log("Resume uploaded to Cloudinary:", cloudinaryResponse.secure_url);
-    // Clean up local file
     fs.unlinkSync(req.file.path);
 
     res.json({
@@ -212,11 +213,9 @@ userroutes.post("/upload_resume",authmiddleware,upload.single("resume"),async(re
     });
 
   } catch (error) {
-    // Clean up local file if it exists
     if (req.file && fs.existsSync(req.file.path)) {
       fs.unlinkSync(req.file.path);
-    }
-    
+    }  
     console.error('Upload error:', error);
     res.status(500).json({ 
       message: "Failed to upload resume",
@@ -241,8 +240,20 @@ userroutes.get("/jobs",authmiddleware,async(req,res)=>{
 userroutes.post("/apply",(req,res)=>{
     res.json({message:"User applied for job"})
 })
-userroutes.get("/appliedjobs",(req,res)=>{
-    res.json({message:"User applied jobs"})
+userroutes.get("/appliedjobs",authmiddleware,(req,res)=>{
+    const userId = (req as unknown as AuthenticatedRequest).userId;
+    if(!userId){
+        res.json({
+            message:"User not authenticated",
+        })
+        return
+    }
+    const appliedJobs = prismaclient.userJobs.findMany({
+        where: {
+            userId: userId,
+        },
+    })
+    res.json({appliedJobs})
 })
 userroutes.get("/appliedjobs/:id",(req,res)=>{
     res.json({message:`User applied job with id ${req.params.id}`})
