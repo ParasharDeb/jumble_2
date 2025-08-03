@@ -232,10 +232,24 @@ userroutes.get("/jobs",authmiddleware,async(req,res)=>{
         })
         return
     }   
-    const jobs= await prismaclient.jobs.findMany({
-
-    })
-    res.json({jobs})
+    try {
+        const jobs = await prismaclient.jobs.findMany({
+            include: {
+                HR: {
+                    select: {
+                        firstname: true,
+                        lastname: true,
+                        email: true,
+                    },
+                },
+            },
+        })
+        res.json({jobs})
+    } catch (error) {
+        res.json({
+            message:"Error fetching jobs",
+        })
+    }
 })
 userroutes.post("/apply",(req,res)=>{
     res.json({message:"User applied for job"})
@@ -255,6 +269,69 @@ userroutes.get("/appliedjobs",authmiddleware,(req,res)=>{
     })
     res.json({appliedJobs})
 })
-userroutes.get("/appliedjobs/:id",(req,res)=>{
-    res.json({message:`User applied job with id ${req.params.id}`})
+userroutes.get("/appliedjobs/:id",authmiddleware,async(req,res)=>{
+    const userId = (req as unknown as AuthenticatedRequest).userId;
+    const jobIdParam = req.params.id;
+    
+    if(!userId){
+        res.json({
+            message:"User not authenticated",
+        })
+        return
+    }
+    
+    if(!jobIdParam){
+        res.json({
+            message:"Job ID is required",
+        })
+        return
+    }
+    
+    const jobId = parseInt(jobIdParam);
+    
+    if(isNaN(jobId)){
+        res.json({
+            message:"Invalid job ID",
+        })
+        return
+    }
+    
+    try {
+        const appliedJob = await prismaclient.userJobs.findUnique({
+            where: {
+                userId_jobId: {
+                    userId: userId,
+                    jobId: jobId,
+                },
+            },
+            include: {
+                job: {
+                    include: {
+                        HR: {
+                            select: {
+                                firstname: true,
+                                lastname: true,
+                                email: true,
+                            },
+                        },
+                    },
+                },
+            },
+        })
+        
+        if(!appliedJob){
+            res.json({
+                message:"Job application not found",
+            })
+            return
+        }
+        
+        res.json({
+            appliedJob: appliedJob,
+        })
+    } catch (error) {
+        res.json({
+            message:"Error fetching job application",
+        })
+    }
 })
