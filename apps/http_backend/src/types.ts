@@ -23,3 +23,6 @@ export const detailsSchema = z.object({
     phone: z.string().min(10, "Phone number must be at least 10 characters long"),
     
 })
+export const jobApplicationSchema = z.object({
+    jobId: z.number().positive("Job ID must be a positive number"),
+})

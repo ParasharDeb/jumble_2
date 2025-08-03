@@ -52,7 +52,7 @@ model Tech_stack {
   version   String
   detailsId Int
   details   Details  @relation(fields: [detailsId], references: [id])
-  jobId     Int
+  jobId     String
   Jobs      Jobs     @relation(fields: [jobId], references: [id])
 }
 
@@ -68,7 +68,7 @@ model HR {
 
 // --- Jobs ---
 model Jobs {
-  id           Int           @id @default(autoincrement())
+  id           String           @id @default(uuid())
   role         String
   description  String
   location     String
@@ -84,11 +84,11 @@ model Jobs {
 
 // --- UserJobs ---
 model UserJobs {
-  userId   String
-  jobId    Int
-  appliedAt DateTime @default(now())
-  user     User      @relation(fields: [userId], references: [id])
-  job      Jobs      @relation(fields: [jobId], references: [id])
+  userId    String
+  jobId     String
+  appliedAt DateTime  @default(now())
+  user      User      @relation(fields: [userId], references: [id])
+  job       Jobs      @relation(fields: [jobId], references: [id])
 
   @@id([userId, jobId])
 }
