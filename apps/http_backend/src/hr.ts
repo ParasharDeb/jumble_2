@@ -121,8 +121,24 @@ hrroutes.put("/change_password",authmiddleware,async(req,res)=>{
     })
     res.json({message:"password updated"})
 })
-hrroutes.get("/profile",(req,res)=>{
-    res.json({message:"HR profile"})
+hrroutes.get("/profile",authmiddleware,async(req,res)=>{
+    const userId = (req as unknown as AuthenticatedRequest).userId;
+    if(!userId){
+        res.json({
+            message:"User not authenticated",
+        })
+        return
+    }
+    const user = await prismaclient.hR.findUnique({
+        where: {
+            id: userId,
+        },
+        include: {
+            jobs: true,
+        },
+    })
+    res.json({user})
+
 })
 hrroutes.post("/create_job",(req,res)=>{
     res.json({message:"Job created"})
