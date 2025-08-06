@@ -4,7 +4,6 @@ import bcrypt from "bcrypt"
 import { prismaclient } from "@repo/db/client"
 import jwt from "jsonwebtoken"
 import { JWT_SECRET } from "./config"
-
 import { authmiddleware } from "./middleware"
 import { AuthenticatedRequest } from "./interfaces"
 export const hrroutes:Router=express.Router()
@@ -198,10 +197,11 @@ hrroutes.get("/jobs",authmiddleware,async(req,res)=>{
     }
     res.json(jobs)
 })
+//need to figure out these endpoints
 hrroutes.get("/jobs/:id",(req,res)=>{
     res.json({message:`Job details for job with id ${req.params.id}`})
 })
-//need to figure out these endpoints
+
 hrroutes.get("/applied_users/:jobId",(req,res)=>{
     res.json({message:`Users applied for job with id ${req.params.jobId}`})
 })

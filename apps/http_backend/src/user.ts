@@ -292,5 +292,28 @@ userroutes.get("/appliedjobs",authmiddleware,(req,res)=>{
 })
 //TODO :need to check the ep i havent checked it
 userroutes.get("/appliedjobs/:id",authmiddleware,async(req,res)=>{
-    
+    const userId=(req as unknown as AuthenticatedRequest).userId;
+    if(!userId){
+        return res.json({
+            message:"User not authenticated",   
+        })
+    }
+    const jobId = req.params.id;
+    if(!jobId){
+        return res.json({
+            message:"Job ID not provided",
+        })
+    }
+    const appliedJob = await prismaclient.userJobs.findFirst({
+        where: {
+            userId: userId,
+            jobId: jobId,
+        },
+    })
+    if(!appliedJob){
+        return res.json({
+            message:"No applied job found for this user",
+        })
+    }
+    res.json({appliedJob})
 })
