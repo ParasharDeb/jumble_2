@@ -148,6 +148,7 @@ hrroutes.post("/create_job",authmiddleware,async(req,res)=>{
         return
     }
     const userId=(req as unknown as AuthenticatedRequest).userId
+    console.log("User ID from request:", userId);
     if(!userId){
         res.json({
             message:"you are not signed in"

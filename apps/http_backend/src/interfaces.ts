@@ -1,5 +1,5 @@
 export interface AuthenticatedRequest extends Request {
-  userId: string;  
+  userId?: string;  
 }
 export interface Jobrequest extends Request {
   jobId: number;  
